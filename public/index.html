@@ -1,33 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Repository Manager</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repository Manager</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Repository Manager</h1>
-        <form id="repoForm">
-            <label for="userId">User ID:</label>
-            <input type="text" id="userId" name="userId" required>
-
-            <label for="repoUrl">Repository URL:</label>
-            <input type="url" id="repoUrl" name="repoUrl" required>
-
-            <button type="submit">Clone Repository</button>
-        </form>
-
-        <form id="scriptForm">
-            <label for="filename">File to Run:</label>
-            <input type="text" id="filename" name="filename" required>
-
-            <button type="submit">Run Script</button>
-        </form>
-
-        <div id="output"></div>
+  <div id="app">
+    <h1>Repository Manager</h1>
+    <div>
+      <input id="repo-url" type="text" placeholder="Repository URL">
+      <button onclick="createPath()">Create Path</button>
+      <button onclick="cloneRepo()">Clone</button>
     </div>
-    <script src="scripts.js"></script>
+    <div>
+      <input id="command" type="text" placeholder="Command">
+      <button onclick="runCommand()">Run Command</button>
+    </div>
+    <div id="logs">
+      <h2>Logs</h2>
+      <pre id="log-output"></pre>
+    </div>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
