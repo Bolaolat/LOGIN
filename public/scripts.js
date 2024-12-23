@@ -1,33 +1,41 @@
-async function createPath() {
-  const response = await fetch('/create-path', { method: 'POST' });
+// Fetch server info and update the UI
+async function fetchServerInfo() {
+  const response = await fetch('/server-info');
+  const data = await response.json();
+
+  document.querySelector('#address').textContent = data.address;
+  document.querySelector('#uptime').textContent = data.uptime;
+  document.querySelector('#cpu-load').textContent = data.cpuLoad;
+  document.querySelector('#memory').textContent = data.memory;
+  document.querySelector('#disk').textContent = data.disk;
+  document.querySelector('#network-inbound').textContent = data.networkInbound;
+}
+
+// Handle server actions
+async function handleAction(action) {
+  const response = await fetch('/server-action', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action }),
+  });
   const data = await response.json();
   alert(data.message);
+  fetchServerInfo();
 }
 
-async function cloneRepo() {
-  const repoUrl = document.getElementById('repo-url').value;
-  const response = await fetch('/clone', {
+// Handle command input
+async function handleCommand() {
+  const commandInput = document.querySelector('#command-input').value;
+  const response = await fetch('/command', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ repoUrl }),
+    body: JSON.stringify({ command: commandInput }),
   });
   const data = await response.json();
-  displayLogs(data.logs || data.message);
-}
-
-async function runCommand() {
-  const command = document.getElementById('command').value;
-  const response = await fetch('/run-command', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ command }),
-  });
-  const data = await response.json();
-  displayLogs(data.logs || data.message);
-}
-
-function displayLogs(logs) {
-  const logOutput = document.getElementById('log-output');
-  logOutput.textContent += logs + '\n';
+  const logOutput = document.querySelector('#log-output');
+  logOutput.textContent += `${data.output}\n`;
   logOutput.scrollTop = logOutput.scrollHeight;
 }
+
+// Initialize
+fetchServerInfo();
