@@ -1,37 +1,33 @@
-document.getElementById('repoForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+async function createPath() {
+  const response = await fetch('/create-path', { method: 'POST' });
+  const data = await response.json();
+  alert(data.message);
+}
 
-    const userId = document.getElementById('userId').value;
-    const repoUrl = document.getElementById('repoUrl').value;
+async function cloneRepo() {
+  const repoUrl = document.getElementById('repo-url').value;
+  const response = await fetch('/clone', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ repoUrl }),
+  });
+  const data = await response.json();
+  displayLogs(data.logs || data.message);
+}
 
-    try {
-        const response = await fetch('/clone', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, repoUrl })
-        });
-        const message = await response.text();
-        document.getElementById('output').innerText = message;
-    } catch (err) {
-        console.error(err);
-    }
-});
+async function runCommand() {
+  const command = document.getElementById('command').value;
+  const response = await fetch('/run-command', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ command }),
+  });
+  const data = await response.json();
+  displayLogs(data.logs || data.message);
+}
 
-document.getElementById('scriptForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const userId = document.getElementById('userId').value;
-    const filename = document.getElementById('filename').value;
-
-    try {
-        const response = await fetch('/run', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, filename })
-        });
-        const message = await response.text();
-        document.getElementById('output').innerText = message;
-    } catch (err) {
-        console.error(err);
-    }
-});
+function displayLogs(logs) {
+  const logOutput = document.getElementById('log-output');
+  logOutput.textContent += logs + '\n';
+  logOutput.scrollTop = logOutput.scrollHeight;
+}
