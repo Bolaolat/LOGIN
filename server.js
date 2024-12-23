@@ -1,108 +1,68 @@
 const express = require('express');
 const { spawn } = require('child_process');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const PORT = 3000;
 
-const userPaths = {}; // Store paths for users based on IP
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware to get user IP
-app.use((req, res, next) => {
-  req.userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  next();
+// Mock server status
+let serverStatus = {
+  address: "DEMONX:2003",
+  uptime: "10H 20MIN",
+  cpuLoad: "20079/0",
+  memory: "90TB",
+  disk: "894.83 MiB / 700.53 GiB",
+  networkInbound: "666",
+};
+
+// API to get server info
+app.get('/server-info', (req, res) => {
+  res.json(serverStatus);
 });
 
-// Create a path for the user
-app.post('/create-path', (req, res) => {
-  const userIp = req.userIp;
-  const dirPath = path.join(__dirname, 'user_dirs', userIp.replace(/[:.]/g, '_'));
+// API to handle server actions
+app.post('/server-action', (req, res) => {
+  const { action } = req.body;
 
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
+  // Mock handling actions
+  if (action === 'start') {
+    serverStatus.uptime = "5 minutes";
+    serverStatus.cpuLoad = "15%";
+    serverStatus.memory = "2 GB / 4 GB";
+    serverStatus.networkInbound = "120 KB/s";
+    res.json({ message: 'Server started' });
+  } else if (action === 'restart') {
+    serverStatus.uptime = "Restarting...";
+    setTimeout(() => {
+      serverStatus.uptime = "1 minute";
+    }, 2000);
+    res.json({ message: 'Server restarted' });
+  } else if (action === 'stop') {
+    serverStatus.uptime = "Offline";
+    serverStatus.cpuLoad = "Offline";
+    serverStatus.memory = "Offline";
+    serverStatus.networkInbound = "Offline";
+    res.json({ message: 'Server stopped' });
+  } else {
+    res.status(400).json({ message: 'Invalid action' });
   }
-
-  userPaths[userIp] = dirPath;
-  res.json({ message: 'Path created', path: dirPath });
 });
 
-// Clone a repository
-app.post('/clone', (req, res) => {
-  const { repoUrl } = req.body;
-  const userIp = req.userIp;
-  const userPath = userPaths[userIp];
-
-  if (!userPath) {
-    return res.status(400).json({ error: 'Path not created for this user' });
-  }
-
-  const gitClone = spawn('git', ['clone', repoUrl, userPath]);
-
-  let logs = '';
-  gitClone.stdout.on('data', (data) => {
-    logs += data.toString();
-  });
-
-  gitClone.stderr.on('data', (data) => {
-    logs += data.toString();
-  });
-
-  gitClone.on('close', (code) => {
-    if (code === 0) {
-      const yarnInstall = spawn('yarn', ['install'], { cwd: userPath });
-
-      yarnInstall.stdout.on('data', (data) => {
-        logs += data.toString();
-      });
-
-      yarnInstall.stderr.on('data', (data) => {
-        logs += data.toString();
-      });
-
-      yarnInstall.on('close', (code) => {
-        if (code === 0) {
-          res.json({ message: 'Yarn install completed successfully.', logs });
-        } else {
-          res.status(500).json({ message: 'Yarn install failed.', logs });
-        }
-      });
-    } else {
-      res.status(500).json({ message: 'Git clone failed.', logs });
-    }
-  });
-});
-
-// Run commands
-app.post('/run-command', (req, res) => {
+// API to handle command input
+app.post('/command', (req, res) => {
   const { command } = req.body;
-  const userIp = req.userIp;
-  const userPath = userPaths[userIp];
 
-  if (!userPath) {
-    return res.status(400).json({ error: 'Path not created for this user' });
+  // Mock command output
+  if (command) {
+    res.json({ output: `Executed: ${command}` });
+  } else {
+    res.status(400).json({ error: 'No command provided' });
   }
-
-  const cmd = spawn(command, { cwd: userPath, shell: true });
-
-  let logs = '';
-  cmd.stdout.on('data', (data) => {
-    logs += data.toString();
-  });
-
-  cmd.stderr.on('data', (data) => {
-    logs += data.toString();
-  });
-
-  cmd.on('close', (code) => {
-    res.json({ message: `Command exited with code ${code}`, logs });
-  });
 });
 
-// Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });
