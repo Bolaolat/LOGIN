@@ -1,28 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Repository Manager</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Control Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script defer src="script.js"></script>
 </head>
-<body>
-  <div id="app">
-    <h1>Repository Manager</h1>
-    <div>
-      <input id="repo-url" type="text" placeholder="Repository URL">
-      <button onclick="createPath()">Create Path</button>
-      <button onclick="cloneRepo()">Clone</button>
+<body class="bg-gray-900 text-white font-sans">
+    <div class="flex flex-col h-screen">
+        <!-- Top Bar -->
+        <div class="flex items-center justify-between bg-gray-800 p-2">
+            <div class="text-sm">11:14 AM</div>
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-wifi"></i>
+                <i class="fas fa-battery-full"></i>
+                <div class="text-sm">39</div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-center space-x-4 p-4 bg-gray-700">
+            <button class="bg-blue-600 text-white py-2 px-4 rounded" onclick="handleAction('start')">Start</button>
+            <button class="bg-gray-500 text-white py-2 px-4 rounded" onclick="handleAction('restart')">Restart</button>
+            <button class="bg-red-600 text-white py-2 px-4 rounded" onclick="handleAction('stop')">Stop</button>
+        </div>
+
+        <!-- Terminal Output -->
+        <div class="flex-grow bg-gray-800 p-4">
+            <pre id="log-output" class="text-yellow-500">container@pterodactyl~ Server marked as offline.</pre>
+        </div>
+
+        <!-- Command Input -->
+        <div class="bg-gray-800 p-2">
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-500"></i>
+                <input id="command-input" type="text" placeholder="Type a command..." class="bg-gray-800 text-gray-500 flex-grow ml-2 outline-none">
+                <button class="bg-blue-600 text-white py-2 px-4 rounded ml-2" onclick="handleCommand()">Send</button>
+            </div>
+        </div>
+
+        <!-- Server Info -->
+        <div class="bg-gray-800 p-4 grid grid-cols-2 gap-4">
+            <div class="bg-gray-700 p-4 rounded">
+                <div class="text-gray-400">Address</div>
+                <div id="address" class="text-white">Loading...</div>
+            </div>
+            <div class="bg-gray-700 p-4 rounded">
+                <div class="text-gray-400">Uptime</div>
+                <div id="uptime" class="text-red-500">Loading...</div>
+            </div>
+            <div class="bg-gray-700 p-4 rounded">
+                <div class="text-gray-400">CPU Load</div>
+                <div id="cpu-load" class="text-gray-500">Loading...</div>
+            </div>
+            <div class="bg-gray-700 p-4 rounded">
+                <div class="text-gray-400">Memory</div>
+                <div id="memory" class="text-gray-500">Loading...</div>
+            </div>
+            <div class="bg-gray-700 p-4 rounded">
+                <div class="text-gray-400">Disk</div>
+                <div id="disk" class="text-white">Loading...</div>
+            </div>
+            <div class="bg-gray-700 p-4 rounded">
+                <div class="text-gray-400">Network (Inbound)</div>
+                <div id="network-inbound" class="text-gray-500">Loading...</div>
+            </div>
+        </div>
     </div>
-    <div>
-      <input id="command" type="text" placeholder="Command">
-      <button onclick="runCommand()">Run Command</button>
-    </div>
-    <div id="logs">
-      <h2>Logs</h2>
-      <pre id="log-output"></pre>
-    </div>
-  </div>
-  <script src="script.js"></script>
 </body>
 </html>
