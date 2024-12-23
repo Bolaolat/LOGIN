@@ -1,60 +1,95 @@
 const express = require('express');
+const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = 3000;
-const usersFile = path.join(__dirname, 'users.json');
+const usersDir = path.join(__dirname, 'users');
 
 // Middleware
-app.use(bodyParser.json());
-app.use(express.static('public'));
+app.use(express.json());
+app.use(express.static('public')); // Serve static files from "public" folder
 
-// Ensure users.json exists
-if (!fs.existsSync(usersFile)) {
-    fs.writeFileSync(usersFile, JSON.stringify({ users: [] }, null, 2));
+// Ensure users directory exists
+if (!fs.existsSync(usersDir)) {
+    fs.mkdirSync(usersDir, { recursive: true });
 }
 
-// API: Create Account
-app.post('/create-account', (req, res) => {
-    const { username, password } = req.body;
+// Clone repository
+app.post('/clone', (req, res) => {
+    const { repoUrl, userId } = req.body;
+    const userDir = path.join(usersDir, userId);
 
-    if (!username || !password) {
-        return res.status(400).send('Username and password are required.');
+    if (!repoUrl) {
+        return res.status(400).send('Repository URL is required.');
     }
 
-    const usersData = JSON.parse(fs.readFileSync(usersFile, 'utf-8'));
-    if (usersData.users.find(user => user.username === username)) {
-        return res.status(400).send('Username already exists.');
+    if (!fs.existsSync(userDir)) {
+        fs.mkdirSync(userDir, { recursive: true });
     }
 
-    usersData.users.push({ username, password });
-    fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
-    res.send('Account created successfully.');
+    const gitClone = spawn('git', ['clone', repoUrl, '.'], { cwd: userDir });
+
+    gitClone.stdout.on('data', (data) => console.log(`GIT OUTPUT: ${data}`));
+    gitClone.stderr.on('data', (data) => console.error(`GIT ERROR: ${data}`));
+
+    gitClone.on('close', (code) => {
+        if (code === 0) {
+            res.send('Repository cloned successfully!');
+        } else {
+            res.status(500).send('Error cloning repository.');
+        }
+    });
 });
 
-// API: Login
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
+// Install dependencies
+app.post('/install', (req, res) => {
+    const { userId } = req.body;
+    const userDir = path.join(usersDir, userId);
 
-    if (!username || !password) {
-        return res.status(400).send('Username and password are required.');
+    if (!fs.existsSync(userDir)) {
+        return res.status(400).send('User directory not found.');
     }
 
-    const usersData = JSON.parse(fs.readFileSync(usersFile, 'utf-8'));
-    const user = usersData.users.find(
-        user => user.username === username && user.password === password
-    );
+    const yarnInstall = spawn('yarn', ['install'], { cwd: userDir });
 
-    if (user) {
-        res.send('Login successful.');
-    } else {
-        res.status(401).send('Invalid username or password.');
-    }
+    yarnInstall.stdout.on('data', (data) => console.log(`YARN OUTPUT: ${data}`));
+    yarnInstall.stderr.on('data', (data) => console.error(`YARN ERROR: ${data}`));
+
+    yarnInstall.on('close', (code) => {
+        if (code === 0) {
+            res.send('Dependencies installed successfully!');
+        } else {
+            res.status(500).send('Error installing dependencies.');
+        }
+    });
 });
 
-// Start the server
+// Run a script
+app.post('/run', (req, res) => {
+    const { userId, filename } = req.body;
+    const filePath = path.join(usersDir, userId, filename);
+
+    if (!fs.existsSync(filePath)) {
+        return res.status(400).send('File not found.');
+    }
+
+    const nodeProcess = spawn('node', [filePath]);
+
+    let output = '';
+    nodeProcess.stdout.on('data', (data) => (output += data));
+    nodeProcess.stderr.on('data', (data) => (output += data));
+
+    nodeProcess.on('close', (code) => {
+        if (code === 0) {
+            res.send(`Script executed successfully!\n\n${output}`);
+        } else {
+            res.status(500).send(`Error executing script.\n\n${output}`);
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
