@@ -1,62 +1,37 @@
-const createAccountForm = document.getElementById('createAccountForm');
-const loginForm = document.getElementById('loginForm');
-const messageDiv = document.getElementById('message');
-
-// Function to display messages
-function showMessage(message, isError = false) {
-    messageDiv.style.display = 'block';
-    messageDiv.style.backgroundColor = isError ? '#dc3545' : '#28a745';
-    messageDiv.innerText = message;
-
-    setTimeout(() => {
-        messageDiv.style.display = 'none';
-    }, 3000);
-}
-
-// Handle Create Account
-createAccountForm.addEventListener('submit', async (e) => {
+document.getElementById('repoForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const username = document.getElementById('newUsername').value;
-    const password = document.getElementById('newPassword').value;
+
+    const userId = document.getElementById('userId').value;
+    const repoUrl = document.getElementById('repoUrl').value;
 
     try {
-        const response = await fetch('/create-account', {
+        const response = await fetch('/clone', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ userId, repoUrl })
         });
-
         const message = await response.text();
-        if (response.ok) {
-            showMessage(message);
-        } else {
-            showMessage(message, true);
-        }
+        document.getElementById('output').innerText = message;
     } catch (err) {
-        showMessage('An error occurred. Please try again.', true);
+        console.error(err);
     }
 });
 
-// Handle Login
-loginForm.addEventListener('submit', async (e) => {
+document.getElementById('scriptForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+
+    const userId = document.getElementById('userId').value;
+    const filename = document.getElementById('filename').value;
 
     try {
-        const response = await fetch('/login', {
+        const response = await fetch('/run', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ userId, filename })
         });
-
         const message = await response.text();
-        if (response.ok) {
-            showMessage(message);
-        } else {
-            showMessage(message, true);
-        }
+        document.getElementById('output').innerText = message;
     } catch (err) {
-        showMessage('An error occurred. Please try again.', true);
+        console.error(err);
     }
 });
