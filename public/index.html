@@ -3,32 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login and Create Account</title>
+    <title>Repository Manager</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Welcome</h1>
+        <h1>Repository Manager</h1>
+        <form id="repoForm">
+            <label for="userId">User ID:</label>
+            <input type="text" id="userId" name="userId" required>
 
-        <div id="message"></div>
+            <label for="repoUrl">Repository URL:</label>
+            <input type="url" id="repoUrl" name="repoUrl" required>
 
-        <form id="createAccountForm">
-            <h2>Create Account</h2>
-            <label for="newUsername">Username:</label>
-            <input type="text" id="newUsername" required>
-            <label for="newPassword">Password:</label>
-            <input type="password" id="newPassword" required>
-            <button type="submit">Create Account</button>
+            <button type="submit">Clone Repository</button>
         </form>
 
-        <form id="loginForm">
-            <h2>Login</h2>
-            <label for="username">Username:</label>
-            <input type="text" id="username" required>
-            <label for="password">Password:</label>
-            <input type="password" id="password" required>
-            <button type="submit">Login</button>
+        <form id="scriptForm">
+            <label for="filename">File to Run:</label>
+            <input type="text" id="filename" name="filename" required>
+
+            <button type="submit">Run Script</button>
         </form>
+
+        <div id="output"></div>
     </div>
     <script src="scripts.js"></script>
 </body>
